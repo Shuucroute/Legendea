@@ -5,6 +5,7 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.align import Align
 from rich.progress import Progress, BarColumn, TextColumn
+from utils.utils import clean_emoji, box_damages
 
 console = Console()
 
@@ -64,10 +65,9 @@ class Character:
         exp_text.append(f"{amount} ", style="bold cyan")
         exp_text.append("points d'expérience", style="white")
         
-        console.print(Panel(
+        console.print(box_damages(
             Align.center(exp_text),
             border_style="yellow",
-            box=box.ROUNDED,
             padding=(0, 2)
         ))
         
@@ -92,9 +92,9 @@ class Character:
             level_text.append("Bonus obtenus :\n", style="bold yellow")
             level_text.append("❤️ ", style="red")
             level_text.append("PV Max +10\n", style="bold red")
-            level_text.append("⚔️ ", style="yellow")
+            level_text.append(clean_emoji("⚔️ "), style="yellow")
             level_text.append("Attaque +2\n", style="bold yellow")
-            level_text.append("🛡️ ", style="blue")
+            level_text.append(clean_emoji("🛡️ "), style="blue")
             level_text.append("Défense +1", style="bold blue")
 
             console.print(Panel(
@@ -131,10 +131,9 @@ class Character:
             
         exp_text.append(f" {current_exp}/{next_threshold} EXP", style="yellow")
         
-        console.print(Panel(
+        console.print(box_damages(
             Align.center(exp_text),
             border_style="yellow",
-            box=box.ROUNDED,
             padding=(0, 2)
         ))
 
@@ -167,16 +166,15 @@ class Character:
 
         damages = self.compute_damages(target)
         attack_text = Text()
-        attack_text.append("⚔️ ", style="yellow")
+        attack_text.append(clean_emoji("⚔️ "), style="yellow")
         attack_text.append(self.name, style="bold yellow")
         attack_text.append(" attaque avec ", style="white")
         attack_text.append(f"{damages}", style="bold red")
         attack_text.append(" points de dégâts !", style="white")
         
-        console.print(Panel(
+        console.print(box_damages(
             Align.center(attack_text),
             border_style="yellow",
-            box=box.ROUNDED,
             padding=(0, 2)
         ))
         
@@ -185,16 +183,15 @@ class Character:
     def defend(self, damages, attacker):
         raw_damages = self.compute_raw_damages(damages, attacker)
         defense_text = Text()
-        defense_text.append("🛡️ ", style="blue")
+        defense_text.append(clean_emoji("🛡️ "), style="blue")
         defense_text.append(self.name, style="bold blue")
         defense_text.append(" défend et subit ", style="white")
         defense_text.append(f"{raw_damages}", style="bold red")
         defense_text.append(" points de dégâts !", style="white")
         
-        console.print(Panel(
+        console.print(box_damages(
             Align.center(defense_text),
             border_style="blue",
-            box=box.ROUNDED,
             padding=(0, 2)
         ))
         
@@ -260,11 +257,10 @@ class Character:
         progress_text.append(f" {self.hp}/{self.hp_max} PV", style=bar_color)
         
         panel_content.append(progress_text)
-        
-        console.print(Panel(
+
+        console.print(box_damages(
             Align.center(panel_content),
             border_style=bar_color,
-            box=box.ROUNDED,
             padding=(0, 2)
         ))
 
@@ -277,10 +273,9 @@ class Character:
         coins_text.append(f"{amount}", style="bold gold1")
         coins_text.append(" pièces !", style="white")
         
-        console.print(Panel(
+        console.print(box_damages(
             Align.center(coins_text),
             border_style="yellow",
-            box=box.ROUNDED,
             padding=(0, 2)
         ))
 
@@ -292,10 +287,9 @@ class Character:
         coins_text.append(f"{self.coins}", style="bold gold1")
         coins_text.append(" pièces", style="white")
         
-        console.print(Panel(
+        console.print(box_damages(
             Align.center(coins_text),
             border_style="yellow",
-            box=box.ROUNDED,
             padding=(0, 2)
         ))
 

@@ -8,7 +8,7 @@ from shop.objects import (
     ManaCape, HealCape, DefenseCape, UltimateCape,
     Potion, SuperPotion, HyperPotion, MaxPotion
 )
-from utils.utils import center_panel
+from utils.utils import center_panel, clean_emoji
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -45,8 +45,8 @@ def display_category(title: str, items: list):
 
 
 CATEGORIES = {
-    "🛡️ Boucliers": [WoodenShield, BoneShield, IronShield, CopperShield],
-    "⚔️ Épées": [WoodenSword, IronSword, DiamondSword, Excalibur],
+    clean_emoji("🛡️ Boucliers"): [WoodenShield, BoneShield, IronShield, CopperShield],
+    clean_emoji("⚔️ Épées"): [WoodenSword, IronSword, DiamondSword, Excalibur],
     "🦾 Armures": [LeatherArmor, IronArmor, Chainmail, EndiumArmor],
     "✨ Bâtons magiques": [FireStick, IceStick, WindStick, UltimateStick],
     "🔪 Dagues": [WoodenDagger, SilverDagger, CopperDagger, GoldDagger],
@@ -76,9 +76,7 @@ class Shop:
 
     def select_category(self, player):
         console.print("\n")
-        console.print(Align.center(
-            Panel("🗂️ [bold cyan]Choisissez une catégorie[/bold cyan]", border_style="purple4", box=box.ROUNDED)
-        ))
+        console.print(center_panel(clean_emoji("🗂️ [bold cyan]Choisissez une catégorie[/bold cyan]"), "purple4"))
 
         table = Table(show_header=True, header_style="bold gold1", box=box.ROUNDED,
                       title="[bold magenta]Catégories disponibles[/bold magenta]")
@@ -101,7 +99,7 @@ class Shop:
             category_names = list(CATEGORIES.keys())
             category_title = category_names[category_choice - 1]
         except (ValueError, IndexError):
-            console.print(Align.center(Text("❌ Choix invalide. Veuillez entrer un nombre valide.", style="bold red")))
+            console.print(center_panel("❌ Choix invalide. Veuillez entrer un nombre valide.", "red"))
             return
 
         category_classes = CATEGORIES[category_title]
@@ -116,11 +114,11 @@ class Shop:
             
             self.buy_item(player, items[item_choice - 1])
         except (ValueError, IndexError):
-            console.print(Align.center(Text("❌ Choix d'article invalide.", style="bold red")))
+            console.print(center_panel("❌ Choix d'article invalide.", "red"))
 
     def buy_item(self, player, item):
         if player.coins < item.price:
-            console.print(Align.center(Text("❌ Vous n'avez pas assez de pièces pour cet objet.", style="bold red")))
+            console.print(center_panel("❌ Vous n'avez pas assez de pièces pour cet objet.", "red"))
             return
 
         player.coins -= item.price
@@ -132,11 +130,11 @@ class Shop:
             (f"{item.price}🪙", "bold green"),
             style="gold1"
         )
-        console.print(center_panel(text))
+        console.print(center_panel(text, "blue"))
         allowed = getattr(item, 'allowed_classes', None)
         player_class = type(player).__name__
         if hasattr(player, "auto_equip"):
             if allowed is None or player_class in allowed:
                 player.auto_equip(item)
             else:
-                console.print(Align.center(Text(f"ℹ️ Vous avez acheté {item.name} mais votre classe ({player_class}) n'en tirera pas les bonus.", style="yellow")))
+                console.print(center_panel(f"ℹ️ Vous avez acheté {item.name} mais votre classe ({player_class}) n'en tirera pas les bonus.", "yellow"))

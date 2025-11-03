@@ -7,8 +7,8 @@ from rich.text import Text as _Text
 from rich.align import Align
 from rich import box
 from game.character import Character, Warrior, Mage, Thief, Archer, Druid
-from utils.utils import strip_rich_markup, center_panel
-from enemies import ENEMIES
+from game.dungeons import Dungeon, create_dungeons
+from utils.utils import strip_rich_markup, center_panel, clean_emoji, box_combat, box_damages
 from rich.align import Align
 from rich.rule import Rule
 from game import menu
@@ -68,17 +68,6 @@ class Quest:
             ))
             console.print("\n") 
 
-
-class Dungeon:
-    def __init__(self, name):
-        self.name = name
-        self.floors = []
-
-    def add_floor(self, enemies):
-        self.floors.append(enemies)
-
-    def get_total_floors(self):
-        return len(self.floors)
 
 
 def show_health_bar(character):
@@ -162,7 +151,7 @@ def show_mana_bar(character):
 def show_combat_menu():
     menu_text = Text()
     menu_text.append("Actions disponibles:\n\n", style="bold cyan")
-    menu_text.append("⚔️  ", style="yellow")
+    menu_text.append(clean_emoji("⚔️  "), style="yellow")
     menu_text.append("1) Attaquer\n", style="bold white")
     menu_text.append("🎒  ", style="cyan")
     menu_text.append("2) Utiliser un objet\n", style="bold white")
@@ -192,8 +181,8 @@ def show_enemies(enemies):
     table.add_column("№", justify="center", style="dim", width=4)
     table.add_column("Ennemi", justify="left", style="bold red")
     table.add_column("PV", justify="center", style="bold green")
-    table.add_column("⚔️", justify="center", style="bold yellow")
-    table.add_column("🛡️", justify="center", style="bold blue")
+    table.add_column(clean_emoji("⚔️"), justify="center", style="bold yellow")
+    table.add_column(clean_emoji("🛡️"), justify="center", style="bold blue")
     
     for i, enemy in enumerate(enemies, 1):
         health_ratio = enemy.hp / enemy.hp_max
@@ -212,11 +201,10 @@ def show_enemies(enemies):
             _Text(str(enemy.defense_value), style="bold blue")
         )
     
-    console.print(Panel(
+    console.print(box_combat(
         table,
-        title="[bold red]⚔️ Ennemis[/bold red]",
-        border_style="red",
-        box=box.ROUNDED,
+        title=clean_emoji("[bold red]⚔️ Ennemis[/bold red]"),
+        border_style="red"
     ))
 
 
@@ -248,16 +236,15 @@ def handle_player_attack(player, enemies):
     enemy = enemies[enemy_choice - 1]
     
     attack_text = Text()
-    attack_text.append("⚔️ ", style="yellow")
+    attack_text.append(clean_emoji("⚔️ "), style="yellow")
     attack_text.append(player.name, style="bold cyan")
     attack_text.append(" attaque ", style="white")
     attack_text.append(enemy.name, style="bold red")
     attack_text.append(" !", style="white")
     
-    console.print(Panel(
+    console.print(box_damages(
         Align.center(attack_text),
         border_style="yellow",
-        box=box.ROUNDED,
         padding=(0, 2)
     ))
     
@@ -271,10 +258,9 @@ def handle_enemy_counterattack(enemy, player):
     counter_text.append(enemy.name, style="bold red")
     counter_text.append(" contre-attaque !", style="white")
     
-    console.print(Panel(
+    console.print(box_damages(
         Align.center(counter_text),
         border_style="red",
-        box=box.ROUNDED,
         padding=(0, 2)
     ))
     
@@ -296,16 +282,15 @@ def handle_enemy_counterattack(enemy, player):
         return False
     else:
         resist_text = Text()
-        resist_text.append("🛡️ ", style="cyan")
+        resist_text.append(clean_emoji("🛡️ "), style="cyan")
         resist_text.append(player.name, style="bold cyan")
         resist_text.append(" résiste à l'attaque de ", style="white")
         resist_text.append(enemy.name, style="bold red")
         resist_text.append(" !", style="white")
         
-        console.print(Panel(
+        console.print(box_damages(
             Align.center(resist_text),
             border_style="cyan",
-            box=box.ROUNDED,
             padding=(0, 2)
         ))
         return True
@@ -332,7 +317,7 @@ def update_kill_counters(player, enemy):
 def combat(player, enemies):
     console.print("\n")
     console.print(center_panel(
-        Align.center("[bold yellow]⚔️ ✨ Le combat commence ! ✨ ⚔️[/bold yellow]"),
+        Align.center(clean_emoji("[bold yellow]⚔️ ✨ Le combat commence ! ✨ ⚔️[/bold yellow]")),
         border_style="yellow",
         box_style=box.DOUBLE
     ))
@@ -343,10 +328,9 @@ def combat(player, enemies):
     while enemies:
         console.print(Rule(style="gold1", characters="─"))
         
-        console.print(Panel(
+        console.print(box_combat(
             "[bold cyan]État du Combat[/bold cyan]",
-            border_style="cyan",
-            box=box.ROUNDED
+            border_style="cyan"
         ))
         
         show_health_bar(player)
@@ -361,7 +345,7 @@ def combat(player, enemies):
             enemy, enemy_index = handle_player_attack(player, enemies)
             if not enemy.is_alive():
                 victory_text = Text()
-                victory_text.append("🗡️ ", style="yellow")
+                victory_text.append(clean_emoji("🗡️ "), style="yellow")
                 victory_text.append(f"{enemy.name} a été vaincu !", style="bold green")
                 victory_text.append("\n\n")
                 
@@ -371,11 +355,10 @@ def combat(player, enemies):
                 victory_text.append("💰 ", style="yellow")
                 victory_text.append(f"Pièces : +{enemy.coins_reward} pièces", style="bold gold1")
                 
-                console.print(Panel(
+                console.print(box_damages(
                     Align.center(victory_text),
                     title="[bold yellow]💥 Victoire ! 💥[/bold yellow]",
                     border_style="yellow",
-                    box=box.HEAVY,
                     padding=(1, 2)
                 ))
                 
@@ -484,42 +467,7 @@ def check_quests(player):
         quest.check_completion(player)
 
 
-def create_dungeons():
-    from enemies import (
-        Zombie, Zombie2_0, ZombieGuerrier,
-        Skeleton, ReinforcedSkeleton, ArmoredSkeleton,
-        Goblin, BigGoblin,
-        Troll, OlogHai,
-        Cadaverus_Devorator, Kondylos_o_Sarantapus, Roi_Gobelin, Garrok_le_Féroce
-    )
-    dungeons = []
-    dungeon1 = Dungeon("Donjon Zombie")
-    dungeon1.add_floor([Zombie.create_enemy() for _ in range(2)])
-    dungeon1.add_floor([Zombie2_0.create_enemy() for _ in range(2)])
-    dungeon1.add_floor([ZombieGuerrier.create_enemy() for _ in range(2)])
-    if random.random() < 0.4:
-        dungeon1.add_floor([Cadaverus_Devorator.create_boss()])
-    dungeons.append(dungeon1)
-    dungeon2 = Dungeon("Donjon Squelettes")
-    dungeon2.add_floor([Skeleton.create_enemy() for _ in range(2)])
-    dungeon2.add_floor([ReinforcedSkeleton.create_enemy() for _ in range(2)])
-    dungeon2.add_floor([ArmoredSkeleton.create_enemy() for _ in range(2)])
-    if random.random() < 0.4:
-        dungeon2.add_floor([Kondylos_o_Sarantapus.create_boss()])
-    dungeons.append(dungeon2)
-    dungeon3 = Dungeon("Donjon Gobelins")
-    dungeon3.add_floor([Goblin.create_enemy() for _ in range(2)])
-    dungeon3.add_floor([BigGoblin.create_enemy() for _ in range(2)])
-    if random.random() < 0.4:
-        dungeon3.add_floor([Roi_Gobelin.create_boss()])
-    dungeons.append(dungeon3)
-    dungeon4 = Dungeon("Donjon Trolls")
-    dungeon4.add_floor([Troll.create_enemy() for _ in range(2)])
-    dungeon4.add_floor([OlogHai.create_enemy() for _ in range(2)])
-    if random.random() < 0.4:
-        dungeon4.add_floor([Garrok_le_Féroce.create_boss()])
-    dungeons.append(dungeon4)
-    return dungeons
+
 
 
 def run_dungeon(player, state, dungeon, dungeon_index):
@@ -528,7 +476,7 @@ def run_dungeon(player, state, dungeon, dungeon_index):
             break
         if floor_num - 1 < state.current_floor_index:
             continue
-        console.print(center_panel(f"⚔️ Tu rentres dans le {dungeon.name}, étage {floor_num}!", border_style="gold1"))
+        console.print(center_panel(clean_emoji(f"⚔️ Tu rentres dans le {dungeon.name}, étage {floor_num}!"), border_style="gold1"))
         if not combat(player, enemies):
             choice = menu.show_death_menu()
             if choice == "restart":
@@ -549,7 +497,7 @@ def run_dungeon(player, state, dungeon, dungeon_index):
 
 
 def start_game(player, state: GameState):
-    console.print(Panel("[bold blue]Bienvenue dans le Donjon des Légendes ![/bold blue]", border_style="purple4"))
+    console.print(box_combat("[bold blue]Bienvenue dans le Donjon des Légendes ![/bold blue]", border_style="purple4"))
     time.sleep(0.5)
     if not hasattr(player, 'zombies_killed'):
         player.zombies_killed = 0

@@ -1,7 +1,7 @@
 
 from game import character
 from game.game import GameState
-from utils.utils import center_panel
+from utils.utils import center_panel, clean_emoji
 from shop.objects import ITEM_REGISTRY
 from shop.shop import Shop
 from rich.console import Console
@@ -184,9 +184,9 @@ def select_character():
                 " ! OH ! Mais vous êtes un ",
                 (f"{char_class}", "bold cyan"),
                 " !",
-                style="green"
+                style="dark_green"
             )
-            console.print(center_panel(text))
+            console.print(center_panel(text, "gold3"))
             return player, GameState(0, 0)
 
         elif choice == "2":
@@ -222,7 +222,7 @@ def select_option(player, state: GameState):
 
         if choice == "1":
             clear_terminal()
-            console.print(center_panel("⚔️ Vous entrez dans le donjon...", "green"))
+            console.print(center_panel(clean_emoji("⚔️ Vous entrez dans le donjon..."), "green"))
             break
 
         elif choice == "2":
