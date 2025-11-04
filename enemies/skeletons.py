@@ -15,7 +15,10 @@ class ReinforcedSkeleton(Skeleton):
     def __init__(self):
         super().__init__()
         self.name = "Squelette Renforcé"
-        self.hp, self.attack_value, self.defense_value = 30, 10, 6
+        self.hp_max = 30
+        self.hp = 30
+        self.attack_value = 10
+        self.defense_value = 6
         self.exp_reward, self.coins_reward = 12, 7
 
     def compute_damages(self, target):
@@ -29,7 +32,10 @@ class ArmoredSkeleton(ReinforcedSkeleton):
     def __init__(self):
         super().__init__()
         self.name = "Squelette à Armure"
-        self.hp, self.attack_value, self.defense_value = 40, 12, 10
+        self.hp_max = 40
+        self.hp = 40
+        self.attack_value = 12
+        self.defense_value = 10
         self.exp_reward, self.coins_reward = 15, 10
 
     def compute_raw_damages(self, damages, attacker):

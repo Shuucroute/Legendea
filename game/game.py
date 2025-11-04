@@ -7,7 +7,7 @@ from rich.text import Text as _Text
 from rich.align import Align
 from rich import box
 from game.character import Character, Warrior, Mage, Thief, Archer, Druid
-from game.dungeons import Dungeon, create_dungeons
+from game.dungeons import Dungeon, create_dungeons, Floor
 from utils.utils import strip_rich_markup, center_panel, clean_emoji, box_combat, box_damages
 from rich.align import Align
 from rich.rule import Rule
@@ -373,7 +373,7 @@ def combat(player, enemies):
                     return False
         elif choice == "2":
             if not player.inventory:
-                console.print(Panel("[yellow]Aucun objet n'est disponible pour le moment.[/yellow]", border_style="purple4"))
+                console.print(box_combat("[yellow]Aucun objet n'est disponible pour le moment.[/yellow]", border_style="purple4"))
             else:
                 table = Table(show_header=True, header_style="bold cyan", box=box.ROUNDED)
                 table.add_column("N°", justify="center", style="dim", width=6)
@@ -382,7 +382,7 @@ def combat(player, enemies):
                     table.add_row(str(i), it.name)
                 table.add_row("0", "🔙 Annuler")
 
-                console.print(Panel(Align.center(table), title="[bold cyan]🎒 Inventaire[/bold cyan]", border_style="cyan"))
+                console.print(box_combat(Align.center(table), title="[bold cyan]🎒 Inventaire[/bold cyan]", border_style="cyan"))
 
                 try:
                     sel = int(input("🎯 Entrez le numéro de l'objet à utiliser (0 pour annuler) : "))
@@ -402,11 +402,11 @@ def combat(player, enemies):
                                 if not handle_enemy_counterattack(enemies[0], player):
                                     return False
                         else:
-                            console.print(Panel("[yellow]Impossible d'utiliser cet objet.[/yellow]", border_style="purple4"))
+                            console.print(box_combat("[yellow]Impossible d'utiliser cet objet.[/yellow]", border_style="purple4"))
                 else:
-                    console.print(Panel("[red]Numéro d'objet invalide.[/red]", border_style="purple4"))
+                    console.print(box_combat("[red]Numéro d'objet invalide.[/red]", border_style="purple4"))
         elif choice == "3":
-            console.print(Panel("[red]Tu fuis la bataille ![/red]", border_style="purple4"))
+            console.print(box_combat("[red]Tu fuis la bataille ![/red]", border_style="purple4"))
             break
 
         if not enemies:
@@ -471,21 +471,71 @@ def check_quests(player):
 
 
 def run_dungeon(player, state, dungeon, dungeon_index):
-    for floor_num, enemies in enumerate(dungeon.floors, start=1):
+    for floor_num, floor in enumerate(dungeon.floors, start=1):
         if state.current_dungeon_index > dungeon_index:
             break
         if floor_num - 1 < state.current_floor_index:
             continue
         console.print(center_panel(clean_emoji(f"⚔️ Tu rentres dans le {dungeon.name}, étage {floor_num}!"), border_style="gold1"))
-        if not combat(player, enemies):
-            choice = menu.show_death_menu()
-            if choice == "restart":
-                player.reset_stats()
-                state.current_dungeon_index = 0
-                state.current_floor_index = 0
-                return False
-            elif choice == "quit":
-                return False
+
+        if isinstance(floor, Floor):
+            total_rooms = len(floor.rooms)
+            for room_idx, room in enumerate(floor.rooms, start=1):
+                console.print(center_panel(clean_emoji(f"🧭 Salle {room_idx}/{total_rooms}"), border_style="purple4"))
+                time.sleep(0.2)
+
+                if getattr(room, 'enemies', None):
+                    enemies = room.enemies
+                    if not combat(player, enemies):
+                        choice = menu.show_death_menu()
+                        if choice == "restart":
+                            player.reset_stats()
+                            state.current_dungeon_index = 0
+                            state.current_floor_index = 0
+                            return False
+                        elif choice == "quit":
+                            return False
+
+                elif getattr(room, 'chest', None):
+                    chest = room.chest
+                    console.print(box_combat(f"Vous trouvez un coffre : [bold]{chest.name}[/bold]", border_style="gold1"))
+                    choice = get_valid_input("👉 Voulez-vous ouvrir le coffre ? (1) Oui (2) Non : ", ["1", "2"])
+                    if choice == "1":
+                        loot = chest.open()
+                        loot_names = [getattr(i, 'name', str(i)) for i in loot]
+                        obtained_text = []
+                        for it in loot:
+                            if hasattr(it, 'coins_amount'):
+                                player.get_coins(it.coins_amount)
+                                obtained_text.append(f"{getattr(it,'name')} (+{it.coins_amount} pièces)")
+                            elif hasattr(it, 'exp_amount'):
+                                player.gain_exp(it.exp_amount)
+                                obtained_text.append(f"{getattr(it,'name')} (+{it.exp_amount} EXP)")
+                            else:
+                                try:
+                                    player.inventory.append(it)
+                                    player.auto_equip(it)
+                                    obtained_text.append(getattr(it, 'name', str(it)))
+                                except Exception:
+                                    obtained_text.append(getattr(it, 'name', str(it)))
+
+                        console.print(box_combat(f"Vous récupérez : {', '.join(obtained_text)}", border_style="green"))
+                    else:
+                        console.print(box_combat("Vous laissez le coffre intact.", border_style="yellow"))
+
+                time.sleep(0.3)
+
+        else:
+            enemies = floor
+            if not combat(player, enemies):
+                choice = menu.show_death_menu()
+                if choice == "restart":
+                    player.reset_stats()
+                    state.current_dungeon_index = 0
+                    state.current_floor_index = 0
+                    return False
+                elif choice == "quit":
+                    return False
         state.current_floor_index = floor_num
         player.reset_stats()
         result = show_floor_completion_menu_and_save(player, state, floor_num, dungeon.get_total_floors())

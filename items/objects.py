@@ -8,23 +8,26 @@ class Shield:
 
 class WoodenShield(Shield):
     def __init__(self):
-        super().__init__("Bouclier en bois", 10, 1)
+        super().__init__("Bouclier en bois", 10, 5)
 
 
 class BoneShield(Shield):
     def __init__(self):
-        super().__init__("Bouclier en os", 20, 2)
+        super().__init__("Bouclier en os", 20, 8)
 
 
 class IronShield(Shield):
     def __init__(self):
-        super().__init__("Bouclier en fer", 30, 3)
+        super().__init__("Bouclier en fer", 30, 12)
 
 
 class CopperShield(Shield):
     def __init__(self):
-        super().__init__("Bouclier en cuivre", 40, 4)
+        super().__init__("Bouclier en cuivre", 40, 16)
 
+class EndiumShield(Shield):
+    def __init__(self):
+        super().__init__("Bouclier en Endium", 500, 30)
 
 
 class Sword:
@@ -238,11 +241,63 @@ class MaxPotion(potion):
     def __init__(self):
         super().__init__("Potion Max", 100, 1000)
 
+
+class CoinBag:
+    def __init__(self, name: str, coins: int):
+        self.name = name
+        self.coins_amount = coins
+
+class LittleCoinBag(CoinBag):
+    def __init__(self):
+        super().__init__("Petit Sac de pièces", 10)
+
+class MediumCoinBag(CoinBag):
+    def __init__(self):
+        super().__init__("Sac de pièces moyen", 21)
+
+class LargeCoinBag(CoinBag):
+    def __init__(self):
+        super().__init__("Grand Sac de pièces", 36)
+
+class GiantCoinBag(CoinBag):
+    def __init__(self):
+        super().__init__("Géant Sac de pièces", 87)
+
+
+class XPScroll:
+    def __init__(self, name: str, exp: int):
+        self.name = name
+        self.exp_amount = exp
+
+class LittleXPScroll(XPScroll):
+    def __init__(self):
+        super().__init__("Petit Parchemin d'EXP", 20)
+
+class MediumXPScroll(XPScroll):
+    def __init__(self):
+        super().__init__("Parchemin d'EXP moyen", 35)
+
+class LargeXPScroll(XPScroll):
+    def __init__(self):
+        super().__init__("Grand Parchemin d'EXP", 60)
+
+class GiantXPScroll(XPScroll):
+    def __init__(self):
+        super().__init__("Géant Parchemin d'EXP", 105)
+
+class Charcoal:
+    def __init__(self):
+        self.name = "Charbon"
+        self.price = 1
+        self.attack_bonus = 1
+        self.allowed_classes = None
+
 ITEM_REGISTRY = {
     WoodenShield().name: WoodenShield,
     BoneShield().name: BoneShield,
     IronShield().name: IronShield,
     CopperShield().name: CopperShield,
+    EndiumShield().name: EndiumShield,
 
     WoodenSword().name: WoodenSword,
     IronSword().name: IronSword,
@@ -277,5 +332,19 @@ ITEM_REGISTRY = {
     Potion().name: Potion,
     SuperPotion().name: SuperPotion,
     HyperPotion().name: HyperPotion,
-    MaxPotion().name: MaxPotion 
+    MaxPotion().name: MaxPotion,
+
+    LittleCoinBag().name: LittleCoinBag,
+    MediumCoinBag().name: MediumCoinBag,
+    LargeCoinBag().name: LargeCoinBag,
+    GiantCoinBag().name: GiantCoinBag,
+
+    LittleXPScroll().name: LittleXPScroll,
+    MediumXPScroll().name: MediumXPScroll,
+    LargeXPScroll().name: LargeXPScroll,
+    GiantXPScroll().name: GiantXPScroll,
+
+    Charcoal().name: Charcoal,
 }
+
+

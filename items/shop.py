@@ -1,4 +1,4 @@
-from shop.objects import (
+from items.objects import (
     WoodenShield, BoneShield, IronShield, CopperShield,
     WoodenSword, IronSword, DiamondSword, Excalibur,
     LeatherArmor, IronArmor, Chainmail, EndiumArmor,

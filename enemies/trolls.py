@@ -12,7 +12,10 @@ class OlogHai(Troll):
     def __init__(self):
         super().__init__()
         self.name = "Olog-Hai"
-        self.hp, self.attack_value, self.defense_value = 50, 20, 15
+        self.hp_max = 50
+        self.hp = 50
+        self.attack_value = 20
+        self.defense_value = 15
         self.exp_reward, self.coins_reward = 30, 20
 
     def compute_damages(self, target):

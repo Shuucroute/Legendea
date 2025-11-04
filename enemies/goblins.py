@@ -12,7 +12,10 @@ class BigGoblin(Goblin):
     def __init__(self):
         super().__init__()
         self.name = "Gros Gobelin"
-        self.hp, self.attack_value, self.defense_value = 40, 10, 8
+        self.hp_max = 40
+        self.hp = 40
+        self.attack_value = 10
+        self.defense_value = 8
         self.exp_reward, self.coins_reward = 18, 12
 
     def compute_damages(self, target):

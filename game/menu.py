@@ -2,8 +2,8 @@
 from game import character
 from game.game import GameState
 from utils.utils import center_panel, clean_emoji
-from shop.objects import ITEM_REGISTRY
-from shop.shop import Shop
+from items.objects import ITEM_REGISTRY
+from items.shop import Shop
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
