@@ -1,6 +1,8 @@
 
+from utils.asciiart import print_art
 from game import character
 from game.game import GameState
+from game.village import village_menu
 from utils.utils import center_panel, clean_emoji
 from items.objects import ITEM_REGISTRY
 from items.shop import Shop
@@ -52,6 +54,7 @@ def display_title(title, color="magenta"):
 
 def show_welcome_screen():
     title_art = """
+
     ██╗     ███████╗ ██████╗ ███████╗███╗   ██╗██████╗ ███████╗ █████╗ 
     ██║     ██╔════╝██╔════╝ ██╔════╝████╗  ██║██╔══██╗██╔════╝██╔══██╗
     ██║     █████╗  ██║  ███╗█████╗  ██╔██╗ ██║██║  ██║█████╗  ███████║
@@ -203,10 +206,10 @@ def select_character():
 
 
 def show_game_menu():
-    display_title("🎮 Menu Principal", "magenta")
+    print_art("village", border_style="blue", style="cyan")
     options = [
         ("1", "Accéder au Donjon", "green"),
-        ("2", "Magasin (Shop)", "yellow"),
+        ("2", "Naviguer dans le village", "blue"),
         ("3", "Sauvegarder la partie", "cyan"),
         ("4", "Quitter", "red"),
     ]
@@ -226,9 +229,13 @@ def select_option(player, state: GameState):
             break
 
         elif choice == "2":
-            console.print(center_panel("🏪 Bienvenue au magasin !", "yellow"))
-            shop = Shop()
-            shop.display_shop(player)
+            result = village_menu(player, state)
+            if result == "adventure":
+                clear_terminal()
+                console.print(center_panel(clean_emoji("⚔️ Vous entrez dans le donjon..."), "green"))
+                break
+            elif result == "menu":
+                continue
 
         elif choice == "3":
             save_game(player, state)
@@ -244,6 +251,7 @@ def select_option(player, state: GameState):
 def show_death_menu():
     clear_terminal()
     display_title("💀 Vous êtes mort ! 💀", "red")
+    print_art("skull", title="Game Over", border_style="red")
     console.print(Align.center(Text("1. Recommencer", style="bold green")))
     console.print(Align.center(Text("2. Quitter", style="bold red")))
 

@@ -292,6 +292,18 @@ class Charcoal:
         self.attack_bonus = 1
         self.allowed_classes = None
 
+class ChairPutrefiee:
+    def __init__(self):
+        self.name = "Chair putréfiée"
+        self.price = 5
+        self.allowed_classes = None
+
+class Bone:
+    def __init__(self):
+        self.name = "Os"
+        self.price = 3
+        self.allowed_classes = None
+
 ITEM_REGISTRY = {
     WoodenShield().name: WoodenShield,
     BoneShield().name: BoneShield,
@@ -345,6 +357,8 @@ ITEM_REGISTRY = {
     GiantXPScroll().name: GiantXPScroll,
 
     Charcoal().name: Charcoal,
+    ChairPutrefiee().name: ChairPutrefiee,
+    Bone().name: Bone,
 }
 
 

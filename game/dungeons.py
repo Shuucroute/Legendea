@@ -4,9 +4,9 @@ import random
 
 from enemies import (
     Zombie, ZombieFaible, ZombieRapide, ZombieMage, ZombieElite, ZombieLent, ZombieRegenerant, Zombie2_0, ZombieGuerrier, ZombieExplosif, ZombieBlindé,
-    Skeleton, ReinforcedSkeleton, ArmoredSkeleton,
-    Goblin, BigGoblin,
-    Troll, OlogHai,
+    Skeleton, ReinforcedSkeleton, ArmoredSkeleton, SkeletonMage, AgileSkeleton, BurningSkeleton, PoisonSkeleton, SpectralSkeleton, GiantSkeleton, NecromancerSkeleton, SkeletonArcher,
+    Goblin, BigGoblin, ThiefGoblin, WarriorGoblin, MageGoblin, ArcherGoblin, AlchemistGoblin, ArmoredGoblin, AgileGoblin, BomberGoblin, GoblinChief,
+    Troll, OlogHai, CaveTroll, RegeneratingTroll, FireTroll, IceTroll, StormTroll, ShamanTroll, NecroticTroll, WarTroll, TrollKing,
     Cadaverus_Devorator, Kondylos_o_Sarantapus, Roi_Gobelin, Garrok_le_Féroce
 )
 from items.chests import create_chest
@@ -115,25 +115,225 @@ def create_zombie_dungeon():
 
 def create_skeleton_dungeon():
     dungeon = Dungeon("Donjon Squelettes")
-    dungeon.add_floor([Skeleton.create_enemy() for _ in range(2)])
-    dungeon.add_floor([ReinforcedSkeleton.create_enemy() for _ in range(2)])
-    dungeon.add_floor([ArmoredSkeleton.create_enemy() for _ in range(2)])
+    rooms = []
+    num_rooms = 10
+    chest_chance = 0.4
+    for i in range(num_rooms):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.70:
+                chest = create_chest('wood')
+            elif r < 0.95:
+                chest = create_chest('silver')
+            elif r < 0.995:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms.append(Room(chest=chest))
+        else:
+            count = random.randint(1, 3)
+            choices = [Skeleton.create_enemy, SkeletonArcher.create_enemy, AgileSkeleton.create_enemy,
+                       SpectralSkeleton.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms))
+
+    rooms2 = []
+    num_rooms2 = 10
+    chest_chance = 0.3
+    for i in range(num_rooms2):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.50:
+                chest = create_chest('wood')
+            elif r < 0.85:
+                chest = create_chest('silver')
+            elif r < 0.895:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms2.append(Room(chest=chest))
+        else:
+            count = random.randint(1, 3)
+            choices = [SpectralSkeleton.create_enemy, ReinforcedSkeleton.create_enemy, SkeletonMage.create_enemy,
+                       BurningSkeleton.create_enemy, PoisonSkeleton.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms2.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms2))
+
+    rooms3 = []
+    num_rooms3 = 10
+    chest_chance = 0.2
+    for i in range(num_rooms3):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.30:
+                chest = create_chest('wood')
+            elif r < 0.70:
+                chest = create_chest('silver')
+            elif r < 0.90:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms3.append(Room(chest=chest))
+        else:
+            count = random.randint(1, 3)
+            choices = [GiantSkeleton.create_enemy, NecromancerSkeleton.create_enemy,
+                       ArmoredSkeleton.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms3.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms3))
+
     if random.random() < 0.4:
         dungeon.add_floor([Kondylos_o_Sarantapus.create_boss()])
     return dungeon
 
 def create_goblin_dungeon():
     dungeon = Dungeon("Donjon Gobelins")
-    dungeon.add_floor([Goblin.create_enemy() for _ in range(2)])
-    dungeon.add_floor([BigGoblin.create_enemy() for _ in range(2)])
+    rooms = []
+    num_rooms = 10
+    chest_chance = 0.4
+    for i in range (num_rooms):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.70:
+                chest = create_chest('wood')
+            elif r < 0.95:
+                chest = create_chest('silver')
+            elif r < 0.995:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms.append(Room(chest=chest))
+        else: 
+            count = random.randint(1, 3)
+            choices = [Goblin.create_enemy, AgileGoblin.create_enemy, ThiefGoblin.create_enemy,
+                       BomberGoblin.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms))
+
+    rooms2 = []
+    num_rooms2 = 10
+    chest_chance = 0.3
+    for i in range(num_rooms2):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.50:
+                chest = create_chest('wood')
+            elif r < 0.85:
+                chest = create_chest('silver')
+            elif r < 0.895:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms2.append(Room(chest=chest))
+        else:
+            count = random.randint(1, 3)
+            choices = [BigGoblin.create_enemy, WarriorGoblin.create_enemy, MageGoblin.create_enemy,
+                       ArcherGoblin.create_enemy, AlchemistGoblin.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms2.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms2))
+
+    rooms3 = []
+    num_rooms3 = 10
+    chest_chance = 0.2
+    for i in range(num_rooms3):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.30:
+                chest = create_chest('wood')
+            elif r < 0.70:
+                chest = create_chest('silver')
+            elif r < 0.90:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms3.append(Room(chest=chest))
+        else:
+            count = random.randint(1, 3)
+            choices = [GoblinChief.create_enemy, ArmoredGoblin.create_enemy,
+                       BigGoblin.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms3.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms3))
+
     if random.random() < 0.4:
         dungeon.add_floor([Roi_Gobelin.create_boss()])
     return dungeon
 
 def create_troll_dungeon():
     dungeon = Dungeon("Donjon Trolls")
-    dungeon.add_floor([Troll.create_enemy() for _ in range(2)])
-    dungeon.add_floor([OlogHai.create_enemy() for _ in range(2)])
+    rooms = []
+    num_rooms = 10
+    chest_chance = 0.4
+    for i in range(num_rooms):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.70:
+                chest = create_chest('wood')
+            elif r < 0.95:
+                chest = create_chest('silver')
+            elif r < 0.995:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms.append(Room(chest=chest))
+        else:
+            count = random.randint(1, 3)
+            choices = [Troll.create_enemy, CaveTroll.create_enemy, RegeneratingTroll.create_enemy,
+                       FireTroll.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms))
+
+    rooms2 = []
+    num_rooms2 = 10
+    chest_chance = 0.3
+    for i in range(num_rooms2):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.50:
+                chest = create_chest('wood')
+            elif r < 0.85:
+                chest = create_chest('silver')
+            elif r < 0.895:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms2.append(Room(chest=chest))
+        else:
+            count = random.randint(1, 3)
+            choices = [OlogHai.create_enemy, IceTroll.create_enemy, StormTroll.create_enemy,
+                       ShamanTroll.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms2.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms2))
+
+    rooms3 = []
+    num_rooms3 = 10
+    chest_chance = 0.2
+    for i in range(num_rooms3):
+        if random.random() < chest_chance:
+            r = random.random()
+            if r < 0.30:
+                chest = create_chest('wood')
+            elif r < 0.70:
+                chest = create_chest('silver')
+            elif r < 0.90:
+                chest = create_chest('gold')
+            else:
+                chest = create_chest('legendary')
+            rooms3.append(Room(chest=chest))
+        else:
+            count = random.randint(1, 3)
+            choices = [NecroticTroll.create_enemy, WarTroll.create_enemy,
+                       TrollKing.create_enemy]
+            enemies = [random.choice(choices)() for _ in range(count)]
+            rooms3.append(Room(enemies=enemies))
+    dungeon.add_floor(Floor(rooms3))
+    
     if random.random() < 0.4:
         dungeon.add_floor([Garrok_le_Féroce.create_boss()])
     return dungeon

@@ -37,7 +37,7 @@ def display_category(title: str, items: list):
 
     for i, item in enumerate(items, start=1):
         table.add_row(str(i), item.name, str(item.price))
-        
+
     table.add_row("0", "🔙 Retour", "")
 
     console.print(Align.center(table))
@@ -63,16 +63,23 @@ class Shop:
     def display_shop(self, player):
         console.print("\n")
 
-        coins_panel = Panel(
-            Align.center(Text(f"💰 Votre solde : {player.coins} 🪙", style="gold1")),
-            border_style="gold1"
-        )
-        console.print(Align.center(coins_panel))
-        console.print(Align.center(
-            Panel("🏪 [bold magenta]Bienvenue dans le magasin ![/bold magenta]",
-                  border_style="gold1", box=box.DOUBLE)
-        ))
-        self.select_category(player)
+        while True:
+            if player.coins <= 0:
+                console.print(center_panel("💸 Vous n'avez plus de pièces. Le magasin se ferme...", "red"))
+                break
+
+            coins_panel = Panel(
+                Align.center(Text(f"💰 Votre solde : {player.coins} 🪙", style="gold1")),
+                border_style="gold1"
+            )
+            console.print(Align.center(coins_panel))
+            console.print(Align.center(
+                Panel("🏪 [bold magenta]Bienvenue dans le magasin ![/bold magenta]",
+                      border_style="gold1", box=box.DOUBLE)
+            ))
+
+            if not self.select_category(player):
+                break
 
     def select_category(self, player):
         console.print("\n")
@@ -85,8 +92,8 @@ class Shop:
 
         for i, name in enumerate(CATEGORIES.keys(), start=1):
             table.add_row(str(i), name)
-            
-        table.add_row("0", "🔙 Retour")
+
+        table.add_row("0", "🔙 Quitter le magasin")
 
         console.print(Align.center(table))
         console.print("\n")
@@ -94,27 +101,38 @@ class Shop:
         try:
             category_choice = int(input("👉 Entrez le numéro de la catégorie : "))
             if category_choice == 0:
-                return
-            
+                return False
+
             category_names = list(CATEGORIES.keys())
             category_title = category_names[category_choice - 1]
         except (ValueError, IndexError):
             console.print(center_panel("❌ Choix invalide. Veuillez entrer un nombre valide.", "red"))
-            return
+            return True
 
         category_classes = CATEGORIES[category_title]
         items = [cls() for cls in category_classes]
-        display_category(category_title, items)
 
-        try:
-            item_choice = int(input("🎯 Entrez le numéro de l'article que vous voulez acheter : "))
-            if item_choice == 0: 
-                self.select_category(player)
-                return
-            
-            self.buy_item(player, items[item_choice - 1])
-        except (ValueError, IndexError):
-            console.print(center_panel("❌ Choix d'article invalide.", "red"))
+        while True:
+            display_category(category_title, items)
+
+            try:
+                item_choice = int(input("🎯 Entrez le numéro de l'article que vous voulez acheter : "))
+                if item_choice == 0:
+                    return True 
+
+                item = items[item_choice - 1]
+                self.buy_item(player, item)
+            except (ValueError, IndexError):
+                console.print(center_panel("❌ Choix d'article invalide.", "red"))
+                continue
+
+            if player.coins <= 0:
+                console.print(center_panel("💸 Vous n'avez plus de pièces. Le magasin se ferme...", "red"))
+                return False
+
+            again = input("🔁 Voulez-vous acheter un autre objet dans cette catégorie ? (o/n) : ").lower()
+            if again != "o":
+                return True
 
     def buy_item(self, player, item):
         if player.coins < item.price:
@@ -123,7 +141,7 @@ class Shop:
 
         player.coins -= item.price
         player.inventory.append(item)
-        text= Text.assemble(
+        text = Text.assemble(
             "✅ Vous avez acheté ",
             (f"{item.name}", "bold yellow"),
             " pour ",
@@ -131,10 +149,13 @@ class Shop:
             style="gold1"
         )
         console.print(center_panel(text, "blue"))
+
         allowed = getattr(item, 'allowed_classes', None)
         player_class = type(player).__name__
         if hasattr(player, "auto_equip"):
             if allowed is None or player_class in allowed:
                 player.auto_equip(item)
             else:
-                console.print(center_panel(f"ℹ️ Vous avez acheté {item.name} mais votre classe ({player_class}) n'en tirera pas les bonus.", "yellow"))
+                console.print(center_panel(
+                    f"ℹ️ Vous avez acheté {item.name} mais votre classe ({player_class}) n'en tirera pas les bonus.",
+                    "yellow"))

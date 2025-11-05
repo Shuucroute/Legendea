@@ -1,4 +1,5 @@
 from rich.console import Console
+from utils.asciiart import print_art
 from rich.progress import Progress, BarColumn, TextColumn
 from rich.table import Table
 from rich.panel import Panel
@@ -9,6 +10,7 @@ from rich import box
 from game.character import Character, Warrior, Mage, Thief, Archer, Druid
 from game.dungeons import Dungeon, create_dungeons, Floor
 from utils.utils import strip_rich_markup, center_panel, clean_emoji, box_combat, box_damages
+from game.quests import Quest, quests
 from rich.align import Align
 from rich.rule import Rule
 from game import menu
@@ -20,53 +22,11 @@ import sys
 console = Console()
 
 
+
 class GameState:
     def __init__(self, current_dungeon_index=0, current_floor_index=0):
         self.current_dungeon_index = current_dungeon_index
         self.current_floor_index = current_floor_index
-
-
-class Quest:
-    def __init__(self, name, description, objective, reward):
-        self.name = name
-        self.description = description
-        self.objective = objective
-        self.reward = reward
-        self.completed = False
-
-    def check_completion(self, player):
-        if self.completed:
-            return
-            
-        quest_complete = False
-        if self.objective == "Tuer 5 zombies" and getattr(player, 'zombies_killed', 0) >= 5:
-            quest_complete = True
-        elif self.objective == "Tuer 3 gobelins" and getattr(player, 'goblins_killed', 0) >= 3:
-            quest_complete = True
-            
-        if quest_complete:
-            self.completed = True
-            player.gain_exp(self.reward["exp"])
-            player.get_coins(self.reward["coins"])
-            
-            quest_text = Text()
-            quest_text.append("📜 ", style="yellow")
-            quest_text.append(f"Quête : {self.name}\n\n", style="bold yellow")
-            quest_text.append(f"{self.description}\n", style="white")
-            quest_text.append("\nRécompenses :\n", style="bold yellow")
-            quest_text.append("✨ ", style="yellow")
-            quest_text.append(f"Expérience : +{self.reward['exp']} XP\n", style="bold cyan")
-            quest_text.append("💰 ", style="yellow")
-            quest_text.append(f"Pièces : +{self.reward['coins']} pièces", style="bold gold1")
-            
-            console.print(Panel(
-                Align.center(quest_text),
-                title="[bold yellow]🎉 Quête Terminée ! 🎉[/bold yellow]",
-                border_style="yellow",
-                box=box.HEAVY,
-                padding=(1, 2)
-            ))
-            console.print("\n") 
 
 
 
@@ -170,6 +130,19 @@ def show_combat_menu():
 
 
 def show_enemies(enemies):
+    # Show ASCII art for first enemy
+    if enemies:
+        first_enemy = enemies[0]
+        enemy_type = type(first_enemy).__name__.lower()
+        if "zombie" in enemy_type:
+            print_art("zombie", title="Un zombie apparaît !", border_style="red")
+        elif "skeleton" in enemy_type:
+            print_art("skeleton", title="Un squelette se dresse !", border_style="red")
+        elif "goblin" in enemy_type:
+            print_art("goblin", title="Un gobelin rode !", border_style="red")
+        elif "troll" in enemy_type:
+            print_art("troll", title="Un troll vous défie !", border_style="red")
+
     table = Table(
         show_header=True,
         header_style="bold red",
@@ -303,15 +276,23 @@ def apply_group_combat_nerf(enemies):
 
 
 def update_kill_counters(player, enemy):
-    from enemies import Zombie, Goblin
+    from enemies import Zombie, Goblin, Skeleton, Troll
     if not hasattr(player, 'zombies_killed'):
         player.zombies_killed = 0
     if not hasattr(player, 'goblins_killed'):
         player.goblins_killed = 0
+    if not hasattr(player, 'skeletons_killed'):
+        player.skeletons_killed = 0
+    if not hasattr(player, 'trolls_killed'):
+        player.trolls_killed = 0
     if isinstance(enemy, Zombie):
         player.zombies_killed += 1
     elif isinstance(enemy, Goblin):
         player.goblins_killed += 1
+    elif isinstance(enemy, Skeleton):
+        player.skeletons_killed += 1
+    elif isinstance(enemy, Troll):
+        player.trolls_killed += 1
 
 
 def combat(player, enemies):
@@ -321,6 +302,7 @@ def combat(player, enemies):
         border_style="yellow",
         box_style=box.DOUBLE
     ))
+
     console.print("\n")
     time.sleep(0.4)
     apply_group_combat_nerf(enemies)
@@ -366,6 +348,24 @@ def combat(player, enemies):
                 
                 player.gain_exp(enemy.exp_reward)
                 player.get_coins(enemy.coins_reward)
+                
+                if hasattr(enemy, 'get_loot'):
+                    loot_items = enemy.get_loot()
+                    if loot_items:
+                        loot_text = Text()
+                        loot_text.append("🎁 ", style="yellow")
+                        loot_text.append("Loot obtenu : ", style="bold yellow")
+                        for item in loot_items:
+                            player.inventory.append(item)
+                            loot_text.append(f"\n  • {item.name}", style="bold green")
+                        
+                        console.print(box_damages(
+                            Align.center(loot_text),
+                            border_style="yellow",
+                            padding=(0, 2)
+                        ))
+                        console.print("\n")
+                
                 update_kill_counters(player, enemy)
                 enemies.pop(enemy_index)
             else:
@@ -439,7 +439,7 @@ def show_floor_completion_menu_and_save(player, state, current_floor, total_floo
         panel = Panel(
             f"[bold cyan]Étage {current_floor}/{total_floors} terminé ![/bold cyan]\n\n"
             "1) Continuer vers l'étage suivant\n"
-            "2) Retourner au menu principal\n"
+            "2) Retourner au village\n"
             "3) Quitter le jeu",
             title="[bold magenta]Fin d'étage[/bold magenta]",
             border_style="gold1"
@@ -498,9 +498,11 @@ def run_dungeon(player, state, dungeon, dungeon_index):
 
                 elif getattr(room, 'chest', None):
                     chest = room.chest
+                    print_art("closedchest", title="Un coffre mystérieux...", border_style="gold1")
                     console.print(box_combat(f"Vous trouvez un coffre : [bold]{chest.name}[/bold]", border_style="gold1"))
                     choice = get_valid_input("👉 Voulez-vous ouvrir le coffre ? (1) Oui (2) Non : ", ["1", "2"])
                     if choice == "1":
+                        print_art("openchest", title="Le coffre s'ouvre !", border_style="green")
                         loot = chest.open()
                         loot_names = [getattr(i, 'name', str(i)) for i in loot]
                         obtained_text = []
@@ -547,12 +549,17 @@ def run_dungeon(player, state, dungeon, dungeon_index):
 
 
 def start_game(player, state: GameState):
+    print_art("dungeon", title="Bienvenue dans le donjon !", border_style="purple4")
     console.print(box_combat("[bold blue]Bienvenue dans le Donjon des Légendes ![/bold blue]", border_style="purple4"))
     time.sleep(0.5)
     if not hasattr(player, 'zombies_killed'):
         player.zombies_killed = 0
     if not hasattr(player, 'goblins_killed'):
         player.goblins_killed = 0
+    if not hasattr(player, 'skeletons_killed'):
+        player.skeletons_killed = 0
+    if not hasattr(player, 'trolls_killed'):
+        player.trolls_killed = 0
     dungeons = create_dungeons()
     for i, dungeon in enumerate(dungeons):
         if not run_dungeon(player, state, dungeon, i):
@@ -573,18 +580,4 @@ def add_reset_stats_method():
 
 add_reset_stats_method()
 
-
-quests = [
-    Quest(
-        name="La Menace Zombie",
-        description="Tuez 5 zombies pour protéger le village.",
-        objective="Tuer 5 zombies",
-        reward={"exp": 100, "coins": 50},
-    ),
-    Quest(
-        name="Le Trésor des Gobelins",
-        description="Tuez 3 gobelins pour récupérer leur trésor.",
-        objective="Tuer 3 gobelins",
-        reward={"exp": 150, "coins": 75},
-    ),
-]
+# Quests are defined in game/quests.py and imported at the top of this module

@@ -1,3 +1,4 @@
+import random
 from enemies.base_enemy import BaseEnemy
 
 class Zombie(BaseEnemy):
@@ -6,6 +7,14 @@ class Zombie(BaseEnemy):
             name="Zombie", hp=20, attack_value=15, defense_value=5,
             exp_reward=5, coins_reward=5,
         )
+    
+    def get_loot(self):
+        """Retourne le loot potentiel du zombie (chance de drop de chair putréfiée)."""
+        from items.objects import ChairPutrefiee
+        
+        if random.random() < 0.30:
+            return [ChairPutrefiee()]
+        return []
 
 
 class ZombieFaible(Zombie):

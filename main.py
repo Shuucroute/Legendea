@@ -6,7 +6,7 @@ from rich.align import Align
 from rich.text import Text
 from rich.rule import Rule
 from rich import box
-
+from utils.utils import center_panel
 from game import menu, game, character
 
 console = Console()
@@ -55,11 +55,16 @@ def display_centered_panel(message: str, style: str = "gold1", border_style: str
     console.print(Align.center(panel, vertical="middle"))
     console.print("\n")
 
+def display_title(title, color="magenta"):
+    console.print("\n")
+    console.print(center_panel(f"[bold {color}]{title}[/bold {color}]", border_style=color))
+    console.print("\n")
+
 
 def display_main_menu() -> None:
     console.print("\n")
     console.print(Align.center(Rule(style="gold1"), vertical="middle"))
-    console.print(Align.center(Text("⚔️ Choisis ta voie ⚔️", style="bold magenta"), vertical="middle"))
+    display_title("🎮 Menu Principal", "magenta")
     console.print(Align.center(Rule(style="gold1"), vertical="middle"))
     time.sleep(0.3)
 
